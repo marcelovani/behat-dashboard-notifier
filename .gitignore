@@ -1,0 +1,11 @@
+# Composer packages directory
+/vendor
+
+# Composer executable files directory
+/bin
+
+# Installed Composer packages versions
+/composer.lock
+
+# IDE
+.idea
