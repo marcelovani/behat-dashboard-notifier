@@ -200,9 +200,9 @@ class DashboardNotifier
             $payload['screenshots'] = $files;
         }
 
-        $this->failedScenarios[] = $payload['feature'];
-        $last = end($this->failedScenarios);
-        $this->failedScenarios[$last] = $payload['steps'];
+        $feature = $payload['feature'];
+        $this->failedScenarios[] = $feature;
+        $this->failedScenarios[$feature][] = $payload['steps'];
 
         return $payload;
     }
