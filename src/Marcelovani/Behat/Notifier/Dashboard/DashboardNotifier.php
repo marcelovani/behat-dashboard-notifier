@@ -2,6 +2,8 @@
 
 namespace Marcelovani\Behat\Notifier\Dashboard;
 
+use Behat\Testwork\EventDispatcher\Event as TestworkEvent;
+
 /**
  * This class sends notification to a dashboard.
  */
@@ -108,55 +110,16 @@ class DashboardNotifier
         switch ($details['eventId']) {
             case 'onBeforeSuiteTested';
                 $this->failedScenarios = [];
-
-                // Prepare payload.
-                $payload = [
-                    'event' => 'suite_started',
-                ];
+                $payload = $this->getSuiteStartedPayload();
                 break;
 
             case 'onAfterSuiteTested';
-                // Prepare payload.
-                $payload = [
-                    'event' => 'suite_finished',
-                    'outcome' => 'passed',
-                ];
-
-                if ($this->failedScenarios) {
-                    $payload['outcome'] = 'failed';
-                    $payload['scenarios'] = $this->failedScenarios;
-                }
+                $payload = $this->getSuiteFinishedPayload();
                 break;
 
             case 'onAfterScenarioTested';
                 if (!$event->getTestResult()->isPassed()) {
-
-                    // Prepare payload.
-                    $payload = [
-                        'event' => 'scenario_failed',
-                        'feature_file' => $event->getFeature()->getFile(),
-                        'feature' => $event->getFeature()->getTitle(),
-                        'description' => $event->getFeature()->getDescription(),
-                        'scenario' => $event->getScenario()->getTitle(),
-                        'line' => $event->getScenario()->getLine(),
-                    ];
-
-                    /** @var Behat\Gherkin\Node\StepNode $step */
-                    foreach ($event->getScenario()->getSteps() as $step) {
-                        $payload['steps'][] = $step->getKeyword() . ' ' . $step->getText();
-                    }
-
-                    // Attach screenshots.
-                    if (!empty($details['screenshotService'])) {
-                        $screenshotService = $details['screenshotService'];
-                        $files = $screenshotService->getImages();
-                        if (!empty($files)) {
-                            array_reverse($files);
-                        }
-                        $payload['screenshots'] = $files;
-                    }
-
-                    $this->failedScenarios[] = $payload['feature'];
+                    $payload = $this->getScenarioFailedPayload($event);
                 }
                 break;
         }
@@ -164,4 +127,72 @@ class DashboardNotifier
         $this->post($payload);
     }
 
+    /**
+     * Helper to get the payload for Suite start event.
+     *
+     * @return string[]
+     */
+    public function getSuiteStartedPayload() {
+        return [
+            'event' => 'suite_started',
+        ];
+    }
+
+    /**
+     * Helper to get the payload for Suite finished event.
+     *
+     * @return string[]
+     */
+    public function getSuiteFinishedPayload() {
+        $payload = [
+            'event' => 'suite_finished',
+            'outcome' => 'passed',
+        ];
+
+        if ($this->failedScenarios) {
+            $payload['outcome'] = 'failed';
+            $payload['scenarios'] = $this->failedScenarios;
+        }
+
+        return $payload;
+    }
+
+    /**
+     * Helper to get the payload for failed scenarios.
+     *
+     * @param TestworkEvent\SuiteTested $event
+     *   The suite event.
+     *
+     * @return string[]
+     */
+    public function getScenarioFailedPayload(TestworkEvent\SuiteTested $event) {
+        // Prepare payload.
+        $payload = [
+            'event' => 'scenario_failed',
+            'feature_file' => $event->getFeature()->getFile(),
+            'feature' => $event->getFeature()->getTitle(),
+            'description' => $event->getFeature()->getDescription(),
+            'scenario' => $event->getScenario()->getTitle(),
+            'line' => $event->getScenario()->getLine(),
+        ];
+
+        /** @var Behat\Gherkin\Node\StepNode $step */
+        foreach ($event->getScenario()->getSteps() as $step) {
+            $payload['steps'][] = $step->getKeyword() . ' ' . $step->getText();
+        }
+
+        // Attach screenshots.
+        if (!empty($details['screenshotService'])) {
+            $screenshotService = $details['screenshotService'];
+            $files = $screenshotService->getImages();
+            if (!empty($files)) {
+                array_reverse($files);
+            }
+            $payload['screenshots'] = $files;
+        }
+
+        $this->failedScenarios[] = $payload['feature'];
+
+        return $payload;
+    }
 }
