@@ -101,6 +101,7 @@ class DashboardNotifier
      */
     public function notify($details)
     {
+        $payload = [];
         $event = $details['event'];
 
         // Send notification.
