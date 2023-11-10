@@ -2,7 +2,7 @@
 
 namespace Marcelovani\Behat\Notifier\Dashboard;
 
-use Behat\Testwork\EventDispatcher\Event as TestworkEvent;
+use Behat\Behat\EventDispatcher\Event\AfterScenarioTested;
 
 /**
  * This class sends notification to a dashboard.
@@ -160,12 +160,12 @@ class DashboardNotifier
     /**
      * Helper to get the payload for failed scenarios.
      *
-     * @param TestworkEvent\SuiteTested $event
+     * @param AfterScenarioTested $event
      *   The suite event.
      *
      * @return string[]
      */
-    public function getScenarioFailedPayload(TestworkEvent\SuiteTested $event) {
+    public function getScenarioFailedPayload(AfterScenarioTested $event) {
         // Prepare payload.
         $payload = [
             'event' => 'scenario_failed',
