@@ -201,8 +201,7 @@ class DashboardNotifier
         }
 
         $feature = $payload['feature'];
-        $this->failedScenarios[] = $feature;
-        $this->failedScenarios[$feature][] = $payload['steps'];
+        $this->failedScenarios[$feature] = $payload['steps'];
 
         return $payload;
     }
