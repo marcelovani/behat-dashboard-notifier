@@ -49,14 +49,17 @@ class DashboardNotifier
      *   The Webhook.
      * @param string $json
      *   The message to send in json format.
+     * @param array $headers
+     *   The headers.
+     * @return string
+     *   The response.
      * @todo Use guzzle.
      */
-    private function doRequest($url, $json)
+    private function doRequest($url, $json, $headers = [])
     {
         $ch = curl_init();
 
-        $header = array();
-        $header[] = 'Content-type: application/json';
+        $headers = array_merge(['Content-type: application/json'], $headers);
 
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
@@ -66,9 +69,9 @@ class DashboardNotifier
         curl_setopt($ch, CURLOPT_HEADER, true);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 
-        curl_exec($ch);
+        $response = curl_exec($ch);
         $response_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
 
@@ -77,6 +80,11 @@ class DashboardNotifier
             $msg = "Dashboard returned invalid response code for endpoint $url. Json $json. Response code $response_code.";
             throw new \Exception($msg);
         }
+
+        $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+        $body = substr($response, $header_size);
+
+        return $body;
     }
 
     /**
@@ -90,11 +98,25 @@ class DashboardNotifier
         if (empty($payload)) {
             return;
         }
+
         var_dump(json_encode($payload, JSON_PRETTY_PRINT));
+
+        // Get auth token once.
+        if (empty($this->params['token'])) {
+            $url = $this->params['endpoint'];
+            $remove = basename($url);
+            $url = str_replace($remove, '', $url);
+            $url .= 'session/token';
+            $this->params['token'] = $this->doRequest($url, '');
+        }
+
         $payload = json_encode($payload);
         $endpoint = $this->getEndpoint();
-        if (!empty($endpoint)) {
-            $this->doRequest($endpoint, $payload);
+        if (!empty($endpoint) && !empty($this->params['token'])) {
+            $headers = [
+                'X-CSRF-Token: ' . $this->params['token'],
+            ];
+            $this->doRequest($endpoint, $payload, $headers);
         }
     }
 
@@ -142,6 +164,7 @@ class DashboardNotifier
      * @return string[]
      */
     public function getSuiteStartedPayload() {
+        // Get auth token.
         return [
             'event' => 'suite_started',
         ];
