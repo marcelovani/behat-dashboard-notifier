@@ -1,0 +1,42 @@
+{
+    "name": "marcelovani/behat-dashboard-notifier",
+    "version": "1.0.0",
+    "type": "library",
+    "description": "Extension for behat to send dashboard notifications",
+    "keywords": [
+        "tdd",
+        "bdd",
+        "behat",
+        "MS",
+        "Microsoft",
+        "dashboard",
+        "Notifications",
+        "Messages"
+    ],
+    "homepage": "https://github.com/marcelovani/behat-dashboard-notifier",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Marcelo Vani",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": ">=5.5",
+        "behat/behat": "^3.0.0",
+        "friends-of-behat/mink-extension": "^2",
+        "symfony/filesystem": "^2.7|^3.0|^4.0|^5.0",
+        "symfony/finder": "^2.7|^3.0|^4.0|^5.0"
+    },
+    "require-dev": {
+        "behat/notifier": "dev-master"
+    },
+    "config": {
+        "bin-dir": "bin"
+    },
+    "autoload": {
+        "psr-0": {
+            "Marcelovani\\Behat\\Notifier\\Dashboard\\": "src"
+        }
+    }
+}
