@@ -87,10 +87,13 @@ class DashboardNotifier
      */
     private function post(array $payload)
     {
+        if (empty($payload)) {
+            return;
+        }
         var_dump(json_encode($payload, JSON_PRETTY_PRINT));
         $payload = json_encode($payload);
         $endpoint = $this->getEndpoint();
-        if (!empty($endpoint) && !empty($payload)) {
+        if (!empty($endpoint)) {
             $this->doRequest($endpoint, $payload);
         }
     }
