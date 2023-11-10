@@ -87,6 +87,7 @@ class DashboardNotifier
      */
     private function post(array $payload)
     {
+        var_dump(json_encode($payload, JSON_PRETTY_PRINT));
         $payload = json_encode($payload);
         $endpoint = $this->getEndpoint();
         if (!empty($endpoint) && $payload) {
@@ -121,6 +122,9 @@ class DashboardNotifier
                     $payload = $this->getScenarioFailedPayload($event);
                 }
                 break;
+
+            default:
+                var_dump("Event $event is not implemented yet.");
         }
 
         $this->post($payload);
