@@ -74,7 +74,7 @@ class DashboardNotifier
 
         // Check response code.
         if ($response_code != 200) {
-            $msg = "Dashboard returned invalid response code for endpoint $url. Response code $response_code.";
+            $msg = "Dashboard returned invalid response code for endpoint $url. Json $json. Response code $response_code.";
             throw new \Exception($msg);
         }
     }
