@@ -107,9 +107,25 @@ class DashboardNotifier
         // Send notification.
         switch ($details['eventId']) {
             case 'onBeforeSuiteTested';
+                $this->failedScenarios = [];
+
+                // Prepare payload.
+                $payload = [
+                    'event' => 'suite_started',
+                ];
                 break;
 
             case 'onAfterSuiteTested';
+                // Prepare payload.
+                $payload = [
+                    'event' => 'suite_finished',
+                    'outcome' => 'passed',
+                ];
+
+                if ($this->failedScenarios) {
+                    $payload['outcome'] = 'failed';
+                    $payload['scenarios'] = $this->failedScenarios;
+                }
                 break;
 
             case 'onAfterScenarioTested';
@@ -117,6 +133,7 @@ class DashboardNotifier
 
                     // Prepare payload.
                     $payload = [
+                        'event' => 'scenario_failed',
                         'feature_file' => $event->getFeature()->getFile(),
                         'feature' => $event->getFeature()->getTitle(),
                         'description' => $event->getFeature()->getDescription(),
