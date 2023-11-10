@@ -26,11 +26,6 @@ class DashboardNotifier
     private $failedScenarios;
 
     /**
-     * Keeps a list of steps for failed scenarios.
-     */
-    private $steps;
-
-    /**
      * Constructor for Dashboard Notifier.
      */
     public function __construct($params)
@@ -118,7 +113,6 @@ class DashboardNotifier
         switch ($details['eventId']) {
             case 'onBeforeSuiteTested';
                 $this->failedScenarios = [];
-                $this->steps = [];
                 $payload = $this->getSuiteStartedPayload();
                 break;
 
@@ -167,7 +161,6 @@ class DashboardNotifier
         if ($this->failedScenarios) {
             $payload['outcome'] = 'failed';
             $payload['scenarios'] = $this->failedScenarios;
-            $payload['steps'] = $this->steps;
         }
 
         return $payload;
@@ -208,8 +201,8 @@ class DashboardNotifier
         }
 
         $this->failedScenarios[] = $payload['feature'];
-        $hash = md5($payload['feature']);
-        $this->steps[$hash] = $payload['steps'];
+        $last = end($this->failedScenarios);
+        $this->failedScenarios[$last] = $payload['steps'];
 
         return $payload;
     }
