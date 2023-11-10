@@ -175,34 +175,48 @@ class DashboardNotifier
      * @return string[]
      */
     public function getScenarioFailedPayload(AfterScenarioTested $event) {
-        // Prepare payload.
-        $payload = [
-            'event' => 'scenario_failed',
-            'feature_file' => $event->getFeature()->getFile(),
-            'feature' => $event->getFeature()->getTitle(),
-            'description' => $event->getFeature()->getDescription(),
-            'scenario' => $event->getScenario()->getTitle(),
-            'line' => $event->getScenario()->getLine(),
-        ];
+        $this->processDetails($event);
 
+        return [
+            'event' => 'scenario_failed',
+            'scenarios' => $this->failedScenarios,
+        ];
+    }
+
+    /**
+     * Helper to process and store details.
+     *
+     * @param AfterScenarioTested $event
+     *   The suite event.
+     */
+    private function processDetails(AfterScenarioTested $event) {
+        // Process steps.
         /** @var Behat\Gherkin\Node\StepNode $step */
+        $steps = [];
         foreach ($event->getScenario()->getSteps() as $step) {
-            $payload['steps'][] = $step->getKeyword() . ' ' . $step->getText();
+            $steps[] = $step->getKeyword() . ' ' . $step->getText();
         }
 
-        // Attach screenshots.
+        // Process screenshots.
+        $screenshots = [];
         if (!empty($details['screenshotService'])) {
             $screenshotService = $details['screenshotService'];
             $files = $screenshotService->getImages();
             if (!empty($files)) {
                 array_reverse($files);
             }
-            $payload['screenshots'] = $files;
+            $screenshots = $files;
         }
 
-        $feature = $payload['feature'];
-        $this->failedScenarios[$feature] = $payload['steps'];
-
-        return $payload;
+        // Store the details.
+        $feature = $event->getFeature()->getTitle();
+        $scenario = $event->getScenario()->getTitle();
+        $this->failedScenarios[$feature][$scenario] = [
+            'description' => $event->getFeature()->getDescription(),
+            'steps' => $steps,
+            'feature_file' => $event->getFeature()->getFile(),
+            'line' => $event->getScenario()->getLine(),
+            'screenshots' => $screenshots,
+        ];
     }
 }
