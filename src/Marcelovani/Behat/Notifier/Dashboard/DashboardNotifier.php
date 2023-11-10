@@ -26,6 +26,11 @@ class DashboardNotifier
     private $failedScenarios;
 
     /**
+     * Keeps a list of steps for failed scenarios.
+     */
+    private $steps;
+
+    /**
      * Constructor for Dashboard Notifier.
      */
     public function __construct($params)
@@ -113,6 +118,7 @@ class DashboardNotifier
         switch ($details['eventId']) {
             case 'onBeforeSuiteTested';
                 $this->failedScenarios = [];
+                $this->steps = [];
                 $payload = $this->getSuiteStartedPayload();
                 break;
 
@@ -122,6 +128,9 @@ class DashboardNotifier
 
             case 'onAfterScenarioTested';
                 if (!$event->getTestResult()->isPassed()) {
+                    // @todo Fix: This will clear previous failed scenarios for the current job in the Dashboard.
+                    // Only at the end, it will show all failed scenarios.
+                    // Perhaps we should always send all failing scenarios in an array.
                     $payload = $this->getScenarioFailedPayload($event);
                 }
                 break;
@@ -158,6 +167,7 @@ class DashboardNotifier
         if ($this->failedScenarios) {
             $payload['outcome'] = 'failed';
             $payload['scenarios'] = $this->failedScenarios;
+            $payload['steps'] = $this->steps;
         }
 
         return $payload;
@@ -198,6 +208,8 @@ class DashboardNotifier
         }
 
         $this->failedScenarios[] = $payload['feature'];
+        $hash = md5($payload['feature']);
+        $this->steps[$hash] = $payload['steps'];
 
         return $payload;
     }
