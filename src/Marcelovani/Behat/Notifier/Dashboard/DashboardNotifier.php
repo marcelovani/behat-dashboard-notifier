@@ -144,10 +144,7 @@ class DashboardNotifier
 
             case 'onAfterScenarioTested';
                 if (!$event->getTestResult()->isPassed()) {
-                    // @todo Fix: This will clear previous failed scenarios for the current job in the Dashboard.
-                    // Only at the end, it will show all failed scenarios.
-                    // Perhaps we should always send all failing scenarios in an array.
-                    $payload = $this->getScenarioFailedPayload($event);
+                    $payload = $this->getScenarioFailedPayload($event, $details['error_message']);
                 }
                 break;
 
@@ -194,11 +191,13 @@ class DashboardNotifier
      *
      * @param AfterScenarioTested $event
      *   The suite event.
+     * @param string $error_message
+     *   The step exception.
      *
      * @return string[]
      */
-    public function getScenarioFailedPayload(AfterScenarioTested $event) {
-        $this->processDetails($event);
+    public function getScenarioFailedPayload(AfterScenarioTested $event, $error_message) {
+        $this->processDetails($event, $error_message);
 
         return [
             'event' => 'scenario_failed',
@@ -211,8 +210,10 @@ class DashboardNotifier
      *
      * @param AfterScenarioTested $event
      *   The suite event.
+     * @param string $error_message
+     *   The step exception.
      */
-    private function processDetails(AfterScenarioTested $event) {
+    private function processDetails(AfterScenarioTested $event, $error_message) {
         // Process steps.
         /** @var Behat\Gherkin\Node\StepNode $step */
         $steps = [];
@@ -239,6 +240,7 @@ class DashboardNotifier
             'steps' => $steps,
             'feature_file' => $event->getFeature()->getFile(),
             'line' => $event->getScenario()->getLine(),
+            'error_message' => $error_message,
             'screenshots' => $screenshots,
         ];
     }
