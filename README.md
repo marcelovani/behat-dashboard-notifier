@@ -1,7 +1,7 @@
 Behat Dashboard Notifier Extension
 =========================
 This Behat extension integrates with [Behat Notifier](https://github.com/marcelovani/behat-notifier)
-to allow sending payload of Behat notifications to a dashboard.
+to allow sending payload of Behat notifications to a [Automation Dashboard](https://github.com/marcelovani/behat-automation-dashboard).
 
 Installation
 ------------
