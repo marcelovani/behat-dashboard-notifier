@@ -18,7 +18,7 @@ class DashboardNotifier
     /**
      * The url to be used in the POST request.
      */
-    private $endpoint;
+    private $url;
 
     /**
      * Keeps a list of failed scenarios.
@@ -36,15 +36,15 @@ class DashboardNotifier
     public function __construct($params)
     {
         $this->params = $params;
-        $this->endpoint = $params['endpoint'];
+        $this->url = $params['url'];
     }
 
     /**
      * Getter for $url.
      */
-    public function getEndpoint()
+    public function getUrl()
     {
-        return $this->endpoint;
+        return trim($this->url, '/');
     }
 
     /**
@@ -97,31 +97,28 @@ class DashboardNotifier
      *
      * @param array $payload
      *   Payload with parameters.
+     * @param string $endpoint
+     *   The endpoint.
      */
-    private function post(array $payload)
+    public function post(array $payload, $endpoint)
     {
         if (empty($payload)) {
             return;
         }
 
-        var_dump(json_encode($payload, JSON_PRETTY_PRINT));
+        $url = $this->getUrl();
 
         // Get auth token once.
         if (empty($this->params['token'])) {
-            $url = $this->params['endpoint'];
-            $remove = basename($url);
-            $url = str_replace($remove, '', $url);
-            $url .= 'session/token';
-            $this->params['token'] = $this->doRequest($url, '');
+            $this->params['token'] = $this->doRequest("$url/session/token", '');
         }
 
         $payload = json_encode($payload);
-        $endpoint = $this->getEndpoint();
         if (!empty($endpoint) && !empty($this->params['token'])) {
             $headers = [
                 'X-CSRF-Token: ' . $this->params['token'],
             ];
-            $this->doRequest($endpoint, $payload, $headers);
+            $this->doRequest("$url/$endpoint", $payload, $headers);
         }
     }
 
@@ -161,7 +158,9 @@ class DashboardNotifier
                 var_dump("Event $event is not implemented yet.");
         }
 
-        $this->post($payload);
+        var_dump(json_encode($payload, JSON_PRETTY_PRINT));
+
+        $this->post($payload, 'dynamicjs');
     }
 
     /**

@@ -25,7 +25,7 @@ default:
     Marcelovani\Behat\Notifier:
       notifiers:
         Marcelovani\Behat\Notifier\Dashboard\DashboardNotifier:
-          endpoint: 'https://www.foo.bar'
+          url: 'https://www.foo.bar'
 
 ```
 
