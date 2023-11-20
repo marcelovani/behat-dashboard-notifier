@@ -26,6 +26,11 @@ class DashboardNotifier
     private $failedScenarios;
 
     /**
+     * Screenshots service.
+     */
+    private $screenshotService;
+
+    /**
      * Constructor for Dashboard Notifier.
      */
     public function __construct($params)
@@ -144,6 +149,10 @@ class DashboardNotifier
 
             case 'onAfterScenarioTested';
                 if (!$event->getTestResult()->isPassed()) {
+                    // Check for screenshot service.
+                    if (!empty($details['screenshotService'])) {
+                        $this->screenshotService = $details['screenshotService'];
+                    }
                     $payload = $this->getScenarioFailedPayload($event, $details['error_message']);
                 }
                 break;
@@ -223,9 +232,8 @@ class DashboardNotifier
 
         // Process screenshots.
         $screenshots = [];
-        if (!empty($details['screenshotService'])) {
-            $screenshotService = $details['screenshotService'];
-            $files = $screenshotService->getImages();
+        if (!empty($this->screenshotService) && method_exists($this->screenshotService, 'getImages')) {
+            $files = $this->screenshotService->getImages();
             if (!empty($files)) {
                 array_reverse($files);
             }
