@@ -160,7 +160,7 @@ class DashboardNotifier
 
         var_dump(json_encode($payload, JSON_PRETTY_PRINT));
 
-        $this->post($payload, 'dynamicjs');
+        $this->post($payload, 'behat/results/upload');
     }
 
     /**
